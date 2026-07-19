@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SonicMoji Engine</title>
+    <style>
+        /* This section styles the app for both desktop and mobile */
+        body { 
+            background-color: #121212; /* Minimalist dark-mode */
+            color: #ffffff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            margin: 0;
+            min-height: 100vh;
+        }
+        .container { 
+            width: 100%; 
+            max-width: 600px; 
+            text-align: center; 
+            margin-top: 25vh; /* Starts in the center (Landing View) */
+            transition: all 0.6s ease; 
+        }
+        /* Moves the search bar to the top when active (Active View) */
+        .active-view { margin-top: 5vh; }
+        
+        h1 { color: #bb86fc; font-size: 2.5rem; margin-bottom: 10px;}
+        p { color: #aaaaaa; margin-bottom: 30px; }
+        
+        /* The central input field */
+        input { 
+            width: 85%; 
+            padding: 18px; 
+            border-radius: 30px; 
+            border: 2px solid #333; 
+            background-color: #1e1e1e;
+            color: white;
+            font-size: 20px; 
+            margin-bottom: 20px; 
+            text-align: center; 
+            outline: none;
+        }
+        input:focus { border-color: #bb86fc; }
+        
+        /* The Generate button */
+        button { 
+            background-color: #bb86fc; 
+            color: #000; 
+            padding: 15px 35px; 
+            border-radius: 25px; 
+            border: none; 
+            font-size: 16px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #9965f4; }
+        
+        /* The stylized output card */
+        .output-card { 
+            background-color: #1e1e1e; 
+            padding: 30px; 
+            border-radius: 15px; 
+            margin-top: 30px; 
+            text-align: left; 
+            white-space: pre-wrap; /* Keeps the line breaks in the lyrics */
+            display: none; 
+            line-height: 1.8; 
+            border: 1px solid #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        
+        /* Subtle CSS loading animation */
+        .loader { 
+            border: 4px solid #1e1e1e; 
+            border-top: 4px solid #bb86fc; 
+            border-radius: 50%; 
+            width: 40px; 
+            height: 40px; 
+            animation: spin 1s linear infinite; 
+            margin: 30px auto; 
+            display: none; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Action buttons for copying and resetting */
+        .action-buttons { 
+            display: none; 
+            margin-top: 25px; 
+            gap: 15px; 
+            justify-content: center; 
+        }
+        .secondary-btn { background-color: #333; color: white; }
+        .secondary-btn:hover { background-color: #444; }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <h1>SonicMoji 🎵</h1>
+        <p>The Emoji-to-Music Synesthesia Engine</p>
+        
+        <!-- New Emoji Quick-Select Bar -->
+    <div class="emoji-picker" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 300px; margin-left: auto; margin-right: auto;">
+        <button onclick="addEmoji('🌧️')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">🌧️</button>
+        <button onclick="addEmoji('🚀')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">🚀</button>
+        <button onclick="addEmoji('🔥')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">🔥</button>
+        <button onclick="addEmoji('🌿')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">🌿</button>
+        <button onclick="addEmoji('✨')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">✨</button>
+	<button onclick="addEmoji('🎵')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">🎵</button>
+	<button onclick="addEmoji('🌊')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">🌊</button>
+	<button onclick="addEmoji('🌙')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">🌙</button>
+	<button onclick="addEmoji('🎸')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">🎸</button>
+	<button onclick="addEmoji('⚡')" style="font-size: 24px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer;">⚡</button>
+    </div>
+<p style="font-size: 0.85rem; color: #888; margin-bottom: 20px;">
+        Need more? Press <b>Windows + .</b> or <b>Cmd + Ctrl + Space</b> for the full library!
+    </p>
+    <input type="text" id="emojiInput" placeholder="Drop your vibe... 🌧️☕🐈‍⬛">
+        <br>
+        <button id="generateBtn" onclick="generateMusic()">Generate Track</button>
+        
+        <div class="loader" id="loader"></div>
+        <div class="output-card" id="outputCard"></div>
+        
+        <div class="action-buttons" id="actionButtons">
+            <button class="secondary-btn" onclick="copyText()">Copy to Clipboard</button>
+            <button class="secondary-btn" onclick="resetApp()">Generate Another</button>
+        </div>
+    </div>
+
+    <script>
+function addEmoji(emoji) {
+            const input = document.getElementById('emojiInput');
+            input.value += emoji;
+        }        
+// This Javascript connects to the server.js file we made earlier
+        async function generateMusic() {
+            const input = document.getElementById('emojiInput').value;
+            if(!input) return; // Do nothing if input is empty
+            
+            // Trigger the Loading State and Active View UI changes
+            document.getElementById('mainContainer').classList.add('active-view');
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('outputCard').style.display = 'none';
+            document.getElementById('outputCard').innerText = '';
+            document.getElementById('actionButtons').style.display = 'none';
+            
+            try {
+                // Reach out to our local backend running on port 3000
+                const response = await fetch('https://sonicmoji.onrender.com/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emojis: input })
+                });
+                
+                // Hide loader and show the stylized card once the connection is made
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('outputCard').style.display = 'block';
+                
+                // This magic code handles the progressive streaming text
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break; // Stop when the AI is finished
+                    // Add the new chunk of text to the screen immediately
+                    document.getElementById('outputCard').innerText += decoder.decode(value, { stream: true });
+                }
+                
+                // Show the action buttons when the stream completes
+                document.getElementById('actionButtons').style.display = 'flex';
+                
+            } catch (error) {
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('outputCard').style.display = 'block';
+    
+    // This will show the actual error in the box
+    document.getElementById('outputCard').innerText = 'System message: ' + error.message + '. Your API quota may still be resetting. Please try again in a few minutes.';
+}
+        }
+
+        // Action View functionality
+        function copyText() {
+            navigator.clipboard.writeText(document.getElementById('outputCard').innerText);
+            alert('Music concept copied to clipboard!');
+        }
+        
+        function resetApp() {
+            document.getElementById('emojiInput').value = '';
+            document.getElementById('mainContainer').classList.remove('active-view');
+            document.getElementById('outputCard').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
